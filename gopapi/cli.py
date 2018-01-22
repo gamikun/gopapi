@@ -78,7 +78,7 @@ def main():
     api = API.shared()
     args = parser.parse_args()
 
-    config_file = os.path.expanduser('~/.godaddy')
+    config_file = os.path.expanduser('~/.gopapi')
     if not os.path.isfile(config_file):
         api.key = getpass('API Key: ')
         api.secret = getpass('Secret: ')
