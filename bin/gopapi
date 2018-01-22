@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+from __future__ import absolute_import
+import gopapi.cli
+
+if __name__ == '__main__':
+	gopapi.cli.main()
