@@ -76,6 +76,7 @@ def main():
     domains_parser.add_argument('data', nargs='*')
 
     api = API.shared()
+    args = parser.parse_args()
 
     config_file = os.path.expanduser('~/.godaddy')
     if not os.path.isfile(config_file):
@@ -99,8 +100,6 @@ def main():
             apikey, secret = decrypted.split(',')
             api.key = apikey
             api.secret = secret
-
-    args = parser.parse_args()
 
     if args.entity == 'domain':
         handle_domain(args)
