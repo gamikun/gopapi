@@ -1,7 +1,7 @@
+from __future__ import absolute_import
 from argparse import ArgumentParser
 from getpass import getpass
-from Crypto.Cipher import AES
-from hashlib import md5
+from gopapi.crypto import cipher_auth, decipher_auth
 import requests
 import json
 import os
@@ -47,7 +47,7 @@ def handle_domain(args):
     if action == 'records':
         response = api.get('domains/{}/records'.format(domain))
         data = response.json()
-
+        
         for record in data:
             print("{}\t{}\t{}".format(record['type'],
                                       record['name'],
@@ -86,20 +86,16 @@ def main():
         should_save = raw_input('should save auth? (y/n): ')
 
         if should_save.lower().startswith('y'):
-            cipher_passwd = md5(getpass('password protection: ')).hexdigest()
-            aes = AES.new(cipher_passwd, AES.MODE_CBC, 'GoDaddy Auth 123')
-            padded = '{:>128}'.format('{},{}'.format(api.key, api.secret))
-            ciphered = aes.encrypt(padded)
+            passwd = getpass('password protection: ')
             with open(config_file, 'w') as fp:
-                fp.write(ciphered)
+                serialized = cipher_auth(api.key, api.secret, passwd)
+                fp.write(serialized)
     else:
-        cipher_passwd = md5(getpass('unlock auth: ')).hexdigest()
-        aes = AES.new(cipher_passwd, AES.MODE_CBC, 'GoDaddy Auth 123')
+        passwd = getpass('unlock auth: ')
         with open(config_file, 'r') as fp:
-            decrypted = aes.decrypt(fp.read()).strip()
-            apikey, secret = decrypted.split(',')
-            api.key = apikey
-            api.secret = secret
+            data = fp.read()
+            auth = decipher_auth(data, passwd)
+            api.key, api.secret = auth
 
     if args.entity == 'domain':
         handle_domain(args)
