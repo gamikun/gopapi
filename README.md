@@ -21,4 +21,18 @@ API key and secret is ciphered with a AES using a password.
     # Where A can also be CNAME
     # 127.0.0.1 to be replaced with the actual IP
 
+## Listing records of a domain
+
+    gopapi domain mydomain.com records
+    # and if you need to filter by record type
+    gopapi domain mydomain.com records -t cname
+
+
+## Listing all domains in godaddy account
+
+    gopapi domains
+    # mydomain1.com
+    # mydomain2.com
+    # ...
+
 
