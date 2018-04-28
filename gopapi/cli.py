@@ -49,10 +49,12 @@ def handle_domain(args):
         data = response.json()
         
         for record in data:
-            print("{}\t{}\t{}".format(record['type'],
-                                      record['name'],
-                                      record['data']
-                                      ))
+            if not args.only_type \
+            or record['type'].lower() == args.only_type.lower():
+                print("{}\t{}\t{}".format(record['type'],
+                                          record['name'],
+                                          record['data']
+                                          ))
 
     elif action == 'add-record':
         url = 'domains/{}/records'.format(domain)
@@ -70,10 +72,13 @@ def main():
     parser = ArgumentParser()
 
     subparsers = parser.add_subparsers(dest='entity')
-    domains_parser = subparsers.add_parser('domain')
-    domains_parser.add_argument('domain', nargs=1)
-    domains_parser.add_argument('action', nargs=1)
-    domains_parser.add_argument('data', nargs='*')
+    domain_parser = subparsers.add_parser('domain')
+    domain_parser.add_argument('domain', nargs=1)
+    domain_parser.add_argument('action', nargs=1)
+    domain_parser.add_argument('data', nargs='*')
+    domain_parser.add_argument('-t', dest='only_type')
+
+    domains_parser = subparsers.add_parser('domains')
 
     api = API.shared()
     args = parser.parse_args()
@@ -99,6 +104,11 @@ def main():
 
     if args.entity == 'domain':
         handle_domain(args)
+
+    elif args.entity == 'domains':
+        data = api.get('/domains')
+        for domain in data.json():
+            print(domain['domain'])
 
 if __name__ == '__main__':
     main()
