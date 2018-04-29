@@ -21,12 +21,12 @@ class API:
             cls._shared = API(None, None)
         return cls._shared
 
-    def get(self, path):
+    def get(self, path, **params):
         headers = {
             'Authorization': 'sso-key {}:{}'.format(self.key, self.secret)
         }
         url = '{}/{}'.format(self.api_url, path)
-        return requests.get(url, headers=headers)
+        return requests.get(url, headers=headers, params=params)
 
     def patch(self, path, **kwargs):
         headers = {
@@ -67,6 +67,15 @@ def handle_domain(args):
         ]
         response = api.patch(url, data=json.dumps(params))
         print(response)
+
+    elif action == 'available' or action == 'check':
+        response = api.get('domains/available', domain=domain)
+        data = response.json()
+        if data['available']:
+            print('available')
+        else:
+            print('not available')
+        
 
 def main():
     parser = ArgumentParser()

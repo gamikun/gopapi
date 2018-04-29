@@ -1,3 +1,7 @@
+# 1.2.0
+
+* Implemented method for check domain availability.
+
 # 1.1.0
 
 * Filter domain records with argument -t and the type (mx/cname...).

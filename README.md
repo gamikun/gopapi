@@ -35,4 +35,12 @@ API key and secret is ciphered with a AES using a password.
     # mydomain2.com
     # ...
 
+## Check wether a domain is available to purchase or not
+
+    gopapi domain mexico.com check
+    # or with alias
+    gopapi domain mexico.com available
+
+
+
 
