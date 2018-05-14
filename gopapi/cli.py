@@ -1,9 +1,10 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 from argparse import ArgumentParser
 from getpass import getpass
 from gopapi.crypto import cipher_auth, decipher_auth
 import requests
 import json
+import sys
 import os
 
 
@@ -34,7 +35,6 @@ class API:
             'Content-Type': 'application/json',
         }
         url = '{}/{}'.format(self.api_url, path)
-        print(url)
         return requests.patch(url, headers=headers, **kwargs)
 
 
@@ -66,7 +66,11 @@ def handle_domain(args):
             }
         ]
         response = api.patch(url, data=json.dumps(params))
-        print(response)
+
+        if response.status_code != 200:
+            info = response.json()
+            print(info['code'], file=sys.stderr)
+            sys.exit(1)
 
     elif action == 'available' or action == 'check':
         response = api.get('domains/available', domain=domain)
@@ -82,8 +86,12 @@ def main():
 
     subparsers = parser.add_subparsers(dest='entity')
     domain_parser = subparsers.add_parser('domain')
-    domain_parser.add_argument('domain', nargs=1)
-    domain_parser.add_argument('action', nargs=1)
+    domain_parser.add_argument('domain', nargs=1,
+                               help=('Domain to be managed. '
+                                     'e.g. mydomain.com')
+                               )
+    domain_parser.add_argument('action', nargs=1,
+                               help='What to do with the domain')
     domain_parser.add_argument('data', nargs='*')
     domain_parser.add_argument('-t', dest='only_type')
 
