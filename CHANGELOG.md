@@ -1,3 +1,7 @@
+# 1.2.1
+
+* No success will be shown, but error code. Additionally program will exit with code 1, for a better third party tools integration.
+
 # 1.2.0
 
 * Implemented method for check domain availability.
