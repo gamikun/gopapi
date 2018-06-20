@@ -60,7 +60,7 @@ def handle_domain(args):
         url = 'domains/{}/records'.format(domain)
         params = [
             {
-                'type': args.data[0], # A / CNAME
+                'type': args.data[0].upper(), # A / CNAME
                 'name': args.data[1], # fulano., mangano.
                 'data': args.data[2], # points to ip/domain
             }
