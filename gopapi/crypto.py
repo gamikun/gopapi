@@ -9,7 +9,10 @@ iv = 'GoDaddy Auth 123'
 def cipher_auth(key, secret, password):
     hashed_pwd = sha256(password).digest()
     aes = AES.new(hashed_pwd, AES.MODE_CBC, iv)
-    data = '{}{:<48}{:<48}{}'.format(salt(), key, secret, salt())
+    data = b''.join([
+        salt(), key.ljust(48),
+        secret.ljust(48), salt(),
+    ])
     return aes.encrypt(data)
 
 def decipher_auth(serialized, password):

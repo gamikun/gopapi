@@ -2,40 +2,11 @@ from __future__ import absolute_import, print_function
 from argparse import ArgumentParser
 from getpass import getpass
 from gopapi.crypto import cipher_auth, decipher_auth
+from gopapi.api import API
 import requests
 import json
 import sys
 import os
-
-
-class API:
-    api_url = 'https://api.godaddy.com/v1'
-    _shared = None
-
-    def __init__(self, key, secret):
-        self.key = key
-        self.secret = secret
-
-    @classmethod
-    def shared(cls):
-        if not cls._shared:
-            cls._shared = API(None, None)
-        return cls._shared
-
-    def get(self, path, **params):
-        headers = {
-            'Authorization': 'sso-key {}:{}'.format(self.key, self.secret)
-        }
-        url = '{}/{}'.format(self.api_url, path)
-        return requests.get(url, headers=headers, params=params)
-
-    def patch(self, path, **kwargs):
-        headers = {
-            'Authorization': 'sso-key {}:{}'.format(self.key, self.secret),
-            'Content-Type': 'application/json',
-        }
-        url = '{}/{}'.format(self.api_url, path)
-        return requests.patch(url, headers=headers, **kwargs)
 
 
 def handle_domain(args):
@@ -47,6 +18,8 @@ def handle_domain(args):
     if action == 'records':
         response = api.get('domains/{}/records'.format(domain))
         data = response.json()
+
+        print(response)
         
         for record in data:
             if not args.only_type \
@@ -71,6 +44,12 @@ def handle_domain(args):
             info = response.json()
             print(info['code'], file=sys.stderr)
             sys.exit(1)
+
+    elif action == 'suggest':
+        url = 'domains/suggest'
+        domains = args.data[0].split(',')
+        response = api.get(url, tlds=domains)
+        #print(response.content)
 
     elif action == 'available' or action == 'check':
         response = api.get('domains/available', domain=domain)
@@ -97,24 +76,26 @@ def main():
 
     domains_parser = subparsers.add_parser('domains')
 
+    inter_parser = subparsers.add_parser('i')
+
     api = API.shared()
     args = parser.parse_args()
 
     config_file = os.path.expanduser('~/.gopapi')
     if not os.path.isfile(config_file):
-        api.key = getpass('API Key: ')
-        api.secret = getpass('Secret: ')
+        api.key = getpass('API Key: ').encode()
+        api.secret = getpass('Secret: ').encode()
 
-        should_save = raw_input('should save auth? (y/n): ')
+        should_save = input('should save auth? (y/n): ')
 
         if should_save.lower().startswith('y'):
-            passwd = getpass('password protection: ')
-            with open(config_file, 'w') as fp:
+            passwd = getpass('password protection: ').encode()
+            with open(config_file, 'wb') as fp:
                 serialized = cipher_auth(api.key, api.secret, passwd)
                 fp.write(serialized)
     else:
-        passwd = getpass('unlock auth: ')
-        with open(config_file, 'r') as fp:
+        passwd = getpass('unlock auth: ').encode()
+        with open(config_file, 'rb') as fp:
             data = fp.read()
             auth = decipher_auth(data, passwd)
             api.key, api.secret = auth
@@ -126,6 +107,9 @@ def main():
         data = api.get('/domains')
         for domain in data.json():
             print(domain['domain'])
+
+    elif args.entity == 'i':
+        from gopapi import interactive
 
 if __name__ == '__main__':
     main()
