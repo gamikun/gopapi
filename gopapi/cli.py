@@ -18,8 +18,6 @@ def handle_domain(args):
     if action == 'records':
         response = api.get('domains/{}/records'.format(domain))
         data = response.json()
-
-        print(response)
         
         for record in data:
             if not args.only_type \
@@ -64,6 +62,8 @@ def main():
     parser = ArgumentParser()
 
     subparsers = parser.add_subparsers(dest='entity')
+
+    # DOMAIN
     domain_parser = subparsers.add_parser('domain')
     domain_parser.add_argument('domain', nargs=1,
                                help=('Domain to be managed. '
@@ -74,7 +74,9 @@ def main():
     domain_parser.add_argument('data', nargs='*')
     domain_parser.add_argument('-t', dest='only_type')
 
+    # DOMAINS
     domains_parser = subparsers.add_parser('domains')
+    domains_parser.add_argument('-status', dest='status', default='active')
 
     inter_parser = subparsers.add_parser('i')
 
@@ -105,8 +107,14 @@ def main():
 
     elif args.entity == 'domains':
         data = api.get('/domains')
+        status = args.status.upper() if args.status else ''
+
         for domain in data.json():
-            print(domain['domain'])
+            if status:
+                if domain['status'] == status:
+                    print(domain['domain'])
+            else:
+                print(domain['domain'])
 
     elif args.entity == 'i':
         from gopapi import interactive
